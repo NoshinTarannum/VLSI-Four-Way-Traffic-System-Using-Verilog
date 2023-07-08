@@ -1,0 +1,245 @@
+module traffic_control(north_road, west_road, south_road, east_road, clk, Resetn, Emergency, Jam, Empty);
+ 
+   input clk, Resetn;
+   input [3:0] Emergency, Jam, Empty;
+   output reg [2:0] north_road, west_road, south_road, east_road;
+ 
+   reg [2:0] state;
+ 
+   parameter [2:0] north_green = 3'b000;
+   parameter [2:0] north_yellow = 3'b001;
+   parameter [2:0] west_green = 3'b010;
+   parameter [2:0] west_yellow = 3'b011;
+   parameter [2:0] south_green = 3'b100;
+   parameter [2:0] south_yellow = 3'b101;
+   parameter [2:0] east_green = 3'b110;
+   parameter [2:0] east_yellow = 3'b111;
+ 
+   reg [4:0] count;
+ 
+   always @(posedge clk, posedge Resetn)
+ 	begin
+    	if (Resetn)
+        	begin
+        	count = 5'b00000;
+        	end
+    	
+    	else if (|Emergency)
+        	begin
+        	state={Emergency[1]|Emergency[0],Emergency[2]|Emergency[0],1'b0};
+        	count = 5'b00000;
+        	end
+    	
+    	else if (|Jam)
+        	begin
+        	state = {Jam[1]|Jam[0],Jam[2]|Jam[0],1'b0};
+        	count = 5'b00000;
+        	end
+    	
+    	else
+        	begin
+            	case (state)
+            	
+            	north_green :
+                	begin
+                    	if (count == 5'b10011||Empty == 4'b1000)
+	                        begin
+                        		count = 5'b00000;
+                        		state = north_yellow;
+                        		end
+                    	else
+                        	begin
+                        	count = count + 5'b00001;
+                        	state = north_green;
+                        	end
+                	end
+ 
+            	north_yellow :
+                	begin
+                    	if (count == 5'b00011)
+                        	begin
+                        	count = 5'b00000;
+                        	state = west_green;
+                        	end
+                    	else
+                	        begin
+                        	count = count + 5'b00001;
+                        	state = north_yellow;
+                    	end
+                	end
+ 
+            	west_green :
+                	begin
+                    	if (count == 5'b10011||Empty == 4'b0100)
+                        	begin
+                        	count = 5'b00000;
+                        	state = west_yellow;
+                        	end
+                    	else
+                        	begin
+                        	count = count + 5'b00001;
+                        	state = west_green;
+                    	end
+                	end
+ 
+        	west_yellow :
+            	begin
+                	if (count == 5'b00011)
+                    	begin
+                    	count = 5'b00000;
+                    	state = south_green;
+                    	end
+                	else
+                    	begin
+         	            count = count + 5'b00001;
+                    	state = west_yellow;
+                    	end
+                	end
+ 
+        	south_green :
+            	begin
+                    	if (count == 5'b10011||Empty == 4'b0010)
+    	                    begin
+                        	count = 5'b00000;
+                        	state = south_yellow;
+                        	end
+                    	else
+                        	begin
+                        	count = count + 5'b00001;
+                        	state = south_green;
+                    	end
+                	end
+ 
+        	south_yellow :
+            	begin
+                	if (count == 5'b00011)
+                    	begin
+                    	count = 5'b00000;
+                    	state = east_green;
+                    	end
+                	else
+                    	begin
+                    	count = count + 5'b00001;
+   	                  state = south_yellow;
+                    	end
+                	end
+ 
+        	east_green :
+            	begin
+                    	if (count == 5'b10011||Empty == 4'b0001)
+                        	begin
+              	          count = 5'b00000;
+                        	state = east_yellow;
+                        	end
+                    	else
+                        	begin
+                        	count = count + 5'b00001;
+                        	state = east_green;
+                    	end
+                	end
+ 
+        	east_yellow :
+            	begin
+                	if (count == 5'b00011)
+                    	begin
+                    	count = 5'b00000;
+                    	state = north_green;
+                    	end
+                	else
+                    	begin
+                    	count = count + 5'b00001;
+                    	state = east_yellow;
+                    	end
+                	end
+                	
+            	default:
+                	begin
+                	count = 5'b00000;
+                	state = north_green;
+                	end
+                	
+        	endcase
+    	end
+	end
+ 
+always @(state)
+ 	begin
+    	if (Resetn)
+        	begin
+            	north_road = 3'b000;
+            	west_road = 3'b000;
+            	south_road = 3'b000;
+            	east_road = 3'b000;
+        	end
+    	else
+    	 begin
+     	 case (state)
+    	 
+        	north_green :
+            	begin
+                	north_road = 3'b001;
+                	west_road = 3'b100;
+                	south_road = 3'b100;
+                	east_road = 3'b100;
+            	end
+ 
+        	north_yellow :
+            	begin
+                	north_road = 3'b010;
+                	west_road = 3'b110;
+                	south_road = 3'b100;
+                	east_road = 3'b100;
+            	end
+ 
+        	west_green :
+            	begin
+                	north_road = 3'b100;
+                	west_road = 3'b001;
+                	south_road = 3'b100;
+                	east_road = 3'b100;
+            	end
+ 
+        	west_yellow :
+            	begin
+                	north_road = 3'b100;
+                	west_road = 3'b010;
+                	south_road = 3'b110;
+                	east_road = 3'b100;
+            	end
+ 
+        	south_green :
+            	begin
+                	north_road = 3'b100;
+     	            west_road = 3'b100;
+                	south_road = 3'b001;
+                	east_road = 3'b100;
+            	end
+ 
+        	south_yellow :
+            	begin
+                	north_road = 3'b100;
+               	 west_road = 3'b100;
+                	south_road = 3'b010;
+                	east_road = 3'b110;
+            	end
+ 
+        	east_green :
+            	begin
+                	north_road = 3'b100;
+                	west_road = 3'b100;
+                	south_road = 3'b100;
+                	east_road = 3'b001;
+            	end
+ 
+        	east_yellow :
+            	begin
+       	         north_road = 3'b110;
+                	west_road = 3'b100;
+                	south_road = 3'b100;
+                	east_road = 3'b010;
+            	end
+            	
+        	endcase
+    	end
+ 	end
+endmodule
