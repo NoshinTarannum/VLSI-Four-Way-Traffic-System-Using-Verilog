@@ -1,0 +1,14 @@
+create_clock -name clk -period 10 -waveform {0 5} [get_ports "clk"]
+set_clock_transition -rise 0.1 [get_clocks "clk"]
+set_clock_transition -fall 0.1 [get_clocks "clk"]
+set_clock_uncertainty 0.1 [get_ports "clk"]
+ 
+set_input_delay -max 1.0 [get_ports "Resetn"] -clock [get_clocks "clk"]
+set_input_delay -max 1.0 [get_ports "Emergency"] -clock [get_clocks "clk"]
+set_input_delay -max 1.0 [get_ports "Jam"] -clock [get_clocks "clk"]
+set_input_delay -max 1.0 [get_ports "Empty"] -clock [get_clocks "clk"]
+ 
+set_output_delay -max 1.0 [get_ports "north_road"] -clock [get_clocks "clk"]
+set_output_delay -max 1.0 [get_ports "west_road"] -clock [get_clocks "clk"]
+set_output_delay -max 1.0 [get_ports "south_road"] -clock [get_clocks "clk"]
+set_output_delay -max 1.0 [get_ports "east_road"] -clock [get_clocks "clk"]
