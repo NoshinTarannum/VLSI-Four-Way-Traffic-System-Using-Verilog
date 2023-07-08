@@ -1,0 +1,35 @@
+module traffic_control_tb;
+reg Clock, Resetn;
+reg [3:0] Emergency, Jam, Empty;
+wire [2:0] north_road, west_road, south_road, east_road;
+traffic_control DUT (Clock, Resetn, Emergency, Jam, Empty, north_road, west_road, south_road, east_road);
+ 
+initial begin
+    	Clock = 1’b1;
+	forever #5 Clock = ~Clock;
+$shm_open("shm.db",1);
+$shm_probe("AS");
+#50 $finish;
+#100 $shm_close();
+end
+ 
+initial
+	begin
+	Resetn = 1; #7;
+	Resetn = 0; #3;
+	Emergency = 0000; Jam = 0000; Empty = 0000; #220;
+	Emergency = 0001; Jam = 0000; Empty = 0000; #70;
+	Emergency = 0000; Jam = 0000; Empty = 0000; #50;
+	Emergency = 0000; Jam = 0100; Empty = 0000; #30;
+	Emergency = 0000; Jam = 0000; Empty = 0000; #70;
+	Emergency = 0000; Jam = 0000; Empty = 0100; #30;
+	Emergency = 1000; Jam = 0000; Empty = 0000; #30;
+	Emergency = 0000; Jam = 0000; Empty = 0000; #120;
+	Emergency = 0000; Jam = 0010; Empty = 0000; #30;
+	Emergency = 0000; Jam = 0000; Empty = 0000; #80;
+	Emergency = 0000; Jam = 0000; Empty = 0010; #20;
+	Emergency = 0000; Jam = 0000; Empty = 0000; #200;
+  #1000;
+  $stop;
+	end
+endmodule
