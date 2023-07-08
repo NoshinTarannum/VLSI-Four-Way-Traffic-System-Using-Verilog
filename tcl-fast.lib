@@ -1,0 +1,9 @@
+set_attr lib_search_path ../lib/
+set_attr hdl_search_path ../rtl/
+set_attr library fast.lib
+read_hdl traffic_control.v
+elaborate
+read_sdc ../constraint/constraints_top.g
+synthesize -to_mapped -effort medium
+write_hdl > traffic_control_netlist.v
+write_sdc > traffic_control_sdc.sdc
